@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>2017 Locations</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+    </style>
+    <script src="assets/script/jquery-3.2.1.min.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <div id="map"></div>
+    <div id="popup" style="position:absolute;top:100px;left:10px;height:100px;width:480px;background-color:#ffffff;display:none;" onclick="this.style.display='none'">
+      <div id="title"></div>
+      <div id='frame' style='float:left;width:360px;'>
+        <img id='picture' style='width:360px;' />
+      </div>
+      <span id="comments"></span>
+    </div>
+    <script>
+			//function attachFilename(marker, filename) {
+			//   marker.addListener('click', function() {
+			//     window.location = "pictures/" + filename;
+			//   });
+			//}
+			/*
+var toType = function(obj) {
+  return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
+}
+					function Alerter(i){
+					  this.i = i;
+					  //this.alerti = 
+					}
+					Alerter.prototype.alerti = function() { window.alert(toType( this)); window.alert(this.name); };
+					*/
+function showpoint(i, timestamp, comments, image) {
+  return function()
+  {
+  map.panTo(new google.maps.LatLng(47, -91));   $('#title').html(i.toString() + ' - ' + timestamp);
+    $('#comments').html(comments);
+    if(image) {
+      $('#frame').show();
+      $('#picture').attr('src', 'assets/pictures/' + image);
+    } else {
+      $('#frame').hide();
+    }
+
+    $('#popup').show();
+  };
+}
+			function receiveData(response) {
+				var marker;
+				datatable = response.getDataTable();
+				datatableNumberOfRows = datatable.getNumberOfRows();
+				var origin = new google.maps.Point(0, 0);
+				var size3x3 = new google.maps.Size(3, 3);
+				var size5x5 = new google.maps.Size(5, 5);
+				var anchor3x3 = new google.maps.Point(1, 1);
+				var anchor5x5 = new google.maps.Point(2, 2);
+				
+				var polyline = null;
+				
+				for (i = 0; i < datatableNumberOfRows; i += 1) {
+				  var exclude = datatable.getValue(i,0);
+
+				if (exclude && !exclude.startsWith('Path')) continue;
+				    
+  				var source = datatable.getValue(i,1);
+  				var label = datatable.getValue(i,2);
+  				var datetime = datatable.getValue(i,4);
+  				var lat = parseFloat(datatable.getValue(i,6));
+  				var lng = parseFloat(datatable.getValue(i,7));
+  				var comments = datatable.getValue(i,3);
+  				
+  				if (exclude == 'Path Start') {
+  				  polyline = [];
+  				}
+  				
+  				if (polyline && exclude != 'Path') {
+  				  polyline.push({lat : lat, lng: lng});
+  				}
+
+					//var type = datatable.getValue(i,0);
+					//var colour = type == "Campsite" ? "00FF00" : type == "Inn" ? "0000FF" : type == "Freeload" ? "A52A2A" : type == "Roadside" ? "FF0000" : "FFFFFF";
+					
+					icon = source == "Manual" ? "bullet_red.png" :
+					  source == "Picture Set A" ? "bullet_yellow.png" :
+					  source == "Picture Set B" ? "bullet_yellow.png" :
+					  source == "Picture Set C" ? "bullet_yellow.png" :
+					  source == "Picture Set D" ? "bullet_yellow.png" :
+					  source == "Google" ? "3x3blue.png" :
+					    "3x3black.png";
+					small = icon == "3x3black.png" || icon == "3x3blue.png";
+					iconsize = small ? size3x3 : size5x5;
+					iconanchor = small ? anchor3x3 : anchor5x5;
+					
+					if (small && !small) {
+					/*
+  					iconobject = {
+	  					  url : 'assets/icons/' + icon,
+		  				  size : iconsize,
+			  			  anchor : iconanchor,
+				  		  origin : origin
+					  	};
+					  	*/
+					} else {
+  					iconobject = {
+	  					  url : 'assets/icons/' + icon,
+		  				  size : iconsize,
+			  			  anchor : iconanchor,
+				  		  origin : origin,
+				  		  zIndex: google.maps.Marker.MAX_ZINDEX + 1
+					  	};
+
+  					var title = source + " " + label;
+  					marker = new google.maps.Marker({
+	  					position : { lat : lat, lng : lng },
+		  				title : title ? title.toString() : null,
+			  			icon : iconobject,
+				  		//colour == "FFFFFF" ? 'bullet_black.png' : 'bullet_red.png',
+					  	//new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + datatable.getValue(i,2).toString() + "|" + color + "|000000"),
+						  map: map
+  					});
+  					marker.addListener('click', showpoint(i+1,datetime, comments, source.startsWith('Picture Set') ? label : null));
+
+					}
+					
+if (exclude == 'Path Finish') {
+
+					  var cyclepath = new google.maps.Polyline({
+              path: polyline,
+              geodesic: true,
+              strokeColor: '#000000',
+              strokeOpacity: 0.8,
+              strokeWeight: 1.5
+            });
+            cyclepath.setMap(map);
+					}
+
+if (exclude == 'Path Finish') {
+	var cyclepath = new google.maps.Polyline({
+
+              path: [{lat:46.17254,lng:-60.08230},{lat:49.28009,lng:-122.95179}],
+
+              geodesic: i%2==0,
+
+              strokeColor: '#000000',
+
+              strokeOpacity: 0.8,
+
+              strokeWeight: 1.5
+
+            });
+
+            cyclepath.setMap(map);
+}
+
+//					var a = new Alerter(i);
+//					var alerter = { index:i, alerti:function() { for(var p in this)alert(p); alert(this.index); }};
+					//if (source.startsWith("Picture Set")) {
+					//  attachFilename(marker, label);
+					//}
+				}
+			}
+			
+      function initMap() {
+				google.charts.load('current', {packages: ['corechart']});
+
+				google.setOnLoadCallback(drawMap);
+			}
+
+			function drawMap() {
+
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 4,
+          center: {lat: 47, lng: -91},
+          mapTypeId: google.maps.MapTypeId.TERRAIN
+        });
+
+				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/1qSjDuGdj6l9aj-ghjLUjHrESR5E4NfUIVvnlb0PPmzE/gviz/tq?sheet=Actual&tq=select%20A,B,C,D,E,F,H,I');
+				//var query = new google.visualization.Query('https://gershie150.neocities.org/json-5.txt');
+				query.send(receiveData);
+			}
+			
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9Op0MuSyx-Rog06OL2UahLIU2hb_wvfA&callback=initMap">
+    </script>
+  </body>
+</html>
