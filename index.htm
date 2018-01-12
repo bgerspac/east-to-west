@@ -1,37 +1,49 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-    <meta charset="utf-8">
-    <title>2017 East-to-West Cycle Tour Locations</title>
-    <style>
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      #map {
-        height: 100%;
-      }
-    </style>
-    <script src="assets/script/jquery-3.2.1.min.js"></script>
-  </head>
-  <body>
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<head>
+		<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+		<meta charset="utf-8">
+		<title>2017 East-to-West Cycle Tour Locations</title>
+		<style>
+			html, body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			#map {
+				height: 100%;
+			}
+		</style>
+		<script src="assets/script/jquery-3.2.1.min.js"></script>
+	</head>
+	<body>
+		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <div id="map"></div>
-    <div id="popup" style="position:absolute;top:100px;left:10px;height:100px;width:480px;background-color:#ffffff;display:none;" onclick="this.style.display='none'">
-      <div id="title"></div>
-      <div id='frame' style='float:left;width:360px;'>
-        <img id='picture' style='width:360px;' />
-      </div>
-      <span id="comments"></span>
-    </div>
-    <script>
-			function showpoint(i, timestamp, comments, image) {
+		<div id="map"></div>
+		<div id="popup" style="position:absolute;top:100px;left:10px;height:100px;width:480px;background-color:#ffffff;display:none;" onclick="this.style.display='none'">
+			<span id='next' onclick='recentre(future_lat, future_lng);'>next</span>
+			<div id='title'></div>
+			<div id='frame' style='float:left;width:360px;'>
+				<img id='picture' style='width:360px;' />
+			</div>
+			<span id="comments"></span>
+		</div>
+		<script>
+			var future_lat;
+			var future_lng;
+			function recentre(lat, lng) {
+				map.panTo(new google.maps.LatLng(lat, lng));
+			}
+			function showpoint(i, timestamp, comments, image, lat, lng) {
 				return function()
 				{
-				map.panTo(new google.maps.LatLng(47, -91));   $('#title').html(i.toString() + ' - ' + timestamp);
+					next = $('#next');
+					future_lat = lat;
+					future_lng = lng;
+					next.attr('lat', lat);
+					next.attr('lng', lng);
+					map.panTo(new google.maps.LatLng(lat, lng));
+					$('#title').html(i.toString() + ' - ' + timestamp);
 					$('#comments').html(comments);
 					if(image) {
 						$('#frame').show();
@@ -44,83 +56,119 @@
 				};
 			}
 
+			var origin;
+			var size3x3;
+			var size5x5;
+			var anchor3x3;
+			var anchor5x5;
+
+			function addpoint(i, exclude, source, label, datetime, lat, lng, next_lat, next_lng, comments, polyline, map) {
+				
+				if (exclude == 'Path Start') {
+					polyline = [];
+				}
+				
+				if (polyline && exclude != 'Path') {
+					polyline.push({lat : lat, lng: lng});
+				}
+
+				icon = source == "Manual" ? "bullet_red.png" :
+					source == "Picture Set A" ? "bullet_yellow.png" :
+					source == "Picture Set B" ? "bullet_yellow.png" :
+					source == "Picture Set C" ? "bullet_yellow.png" :
+					source == "Picture Set D" ? "bullet_yellow.png" :
+					source == "Google" ? "3x3blue.png" :
+						"3x3black.png";
+				small = icon == "3x3black.png" || icon == "3x3blue.png";
+				iconsize = small ? size3x3 : size5x5;
+				iconanchor = small ? anchor3x3 : anchor5x5;
+				
+				if (small && !small) {
+				} else {
+					iconobject = {
+							url : 'assets/icons/' + icon,
+							size : iconsize,
+							anchor : iconanchor,
+							origin : origin,
+							zIndex: google.maps.Marker.MAX_ZINDEX + 1
+						};
+
+					var title = source + " " + label;
+					marker = new google.maps.Marker({
+						position : { lat : lat, lng : lng },
+						title : title ? title.toString() : null,
+						icon : iconobject,
+						map: map
+					});
+					marker.addListener('click', showpoint(i+1,datetime, comments, source.startsWith('Picture Set') ? label : null, next_lat, next_lng));
+				}
+
+				if (exclude == 'Path Finish') {
+					var cyclepath = new google.maps.Polyline({
+						path: polyline,
+						geodesic: true,
+						strokeColor: '#000000',
+						strokeOpacity: 0.8,
+						strokeWeight: 1.5
+					});
+					cyclepath.setMap(map);
+				}
+
+				return polyline;
+			}
+
 			function receiveData(response) {
+
 				var marker;
 				datatable = response.getDataTable();
 				datatableNumberOfRows = datatable.getNumberOfRows();
-				var origin = new google.maps.Point(0, 0);
-				var size3x3 = new google.maps.Size(3, 3);
-				var size5x5 = new google.maps.Size(5, 5);
-				var anchor3x3 = new google.maps.Point(1, 1);
-				var anchor5x5 = new google.maps.Point(2, 2);
 				
+				origin = new google.maps.Point(0, 0);
+				size3x3 = new google.maps.Size(3, 3);
+				size5x5 = new google.maps.Size(5, 5);
+				anchor3x3 = new google.maps.Point(1, 1);
+				anchor5x5 = new google.maps.Point(2, 2);
+
 				var polyline = null;
-				
-				for (i = 0; i < datatableNumberOfRows; i += 1) {
-				  var exclude = datatable.getValue(i,0);
 
-				if (exclude && !exclude.startsWith('Path')) continue;
-				    
-  				var source = datatable.getValue(i,1);
-  				var label = datatable.getValue(i,2);
-  				var datetime = datatable.getValue(i,4);
-  				var lat = parseFloat(datatable.getValue(i,6));
-  				var lng = parseFloat(datatable.getValue(i,7));
-  				var comments = datatable.getValue(i,3);
-  				
-  				if (exclude == 'Path Start') {
-  				  polyline = [];
-  				}
-  				
-  				if (polyline && exclude != 'Path') {
-  				  polyline.push({lat : lat, lng: lng});
-  				}
+				var source;
+				var label;
+				var datetime;
+				var lat;
+				var lng;
+				var next_lat;
+				var next_lng;
+				var comments;
+				var exclude;
 
-					icon = source == "Manual" ? "bullet_red.png" :
-					  source == "Picture Set A" ? "bullet_yellow.png" :
-					  source == "Picture Set B" ? "bullet_yellow.png" :
-					  source == "Picture Set C" ? "bullet_yellow.png" :
-					  source == "Picture Set D" ? "bullet_yellow.png" :
-					  source == "Google" ? "3x3blue.png" :
-					    "3x3black.png";
-					small = icon == "3x3black.png" || icon == "3x3blue.png";
-					iconsize = small ? size3x3 : size5x5;
-					iconanchor = small ? anchor3x3 : anchor5x5;
-					
-					if (small && !small) {
-					} else {
-  					iconobject = {
-	  					  url : 'assets/icons/' + icon,
-		  				  size : iconsize,
-			  			  anchor : iconanchor,
-				  		  origin : origin,
-				  		  zIndex: google.maps.Marker.MAX_ZINDEX + 1
-					  	};
+				var i;
 
-  					var title = source + " " + label;
-  					marker = new google.maps.Marker({
-	  					position : { lat : lat, lng : lng },
-		  				title : title ? title.toString() : null,
-			  			icon : iconobject,
-						  map: map
-  					});
-  					marker.addListener('click', showpoint(i+1,datetime, comments, source.startsWith('Picture Set') ? label : null));
+				for (i = 1; i < datatableNumberOfRows; i += 1) {
+
+					next_lat = parseFloat(datatable.getValue(i,6));
+					next_lng = parseFloat(datatable.getValue(i,7));
+
+					if (i > 1) {
+						if (!exclude || exclude.startsWith('Path')) {
+							polyline = addpoint(i, exclude, source, label, datetime, lat, lng, next_lat, next_lng, comments, polyline, map);
+						}
 					}
 
-					if (exclude == 'Path Finish') {
-					  var cyclepath = new google.maps.Polyline({
-              path: polyline,
-              geodesic: true,
-              strokeColor: '#000000',
-              strokeOpacity: 0.8,
-              strokeWeight: 1.5
-            });
-            cyclepath.setMap(map);
-					}
+					exclude = datatable.getValue(i,0);
+					source = datatable.getValue(i,1);
+					label = datatable.getValue(i,2);
+					datetime = datatable.getValue(i,4);
+					lat = next_lat;
+					lng = next_lng;
+					comments = datatable.getValue(i,3);
+				}
+
+				if (source) {
+					polyline = addpoint(i, exclude, source, label, datetime, lat, lng, next_lat, next_lng, comments, polyline, map);
 				}
 			}
 			
-      function initMap() {
+			function initMap() {
 				google.charts.load('current', {packages: ['corechart']});
 
 				google.setOnLoadCallback(drawMap);
@@ -128,18 +176,18 @@
 
 			function drawMap() {
 
-        map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 4,
-          center: {lat: 47, lng: -91},
-          mapTypeId: google.maps.MapTypeId.TERRAIN
-        });
+				map = new google.maps.Map(document.getElementById('map'), {
+					zoom: 4,
+					center: {lat: 47, lng: -91},
+					mapTypeId: google.maps.MapTypeId.TERRAIN
+				});
 
 				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/1qSjDuGdj6l9aj-ghjLUjHrESR5E4NfUIVvnlb0PPmzE/gviz/tq?sheet=Actual&tq=select%20A,B,C,D,E,F,H,I');
 				query.send(receiveData);
 			}
 			
-    </script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9Op0MuSyx-Rog06OL2UahLIU2hb_wvfA&callback=initMap">
-    </script>
-  </body>
+		</script>
+		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9Op0MuSyx-Rog06OL2UahLIU2hb_wvfA&callback=initMap">
+		</script>
+	</body>
 </html>
