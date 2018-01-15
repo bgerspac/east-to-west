@@ -14,16 +14,25 @@
 			#map {
 				height: 100%;
 			}
+			div#loading {
+				position:absolute;
+				top:0;
+				left:0;
+				right:0;
+				bottom:0;
+				background-color:#ffffff;
+			}
 			div#popup {
+				display:none;
 				position:absolute;
 				top:56px;
 				left:10px;
-				height:560px;
-				width:480px;
+				height:80%;
+				width:32%;
 				background-color:#ffffff;
-				display:none;
 				border-radius:8px;
 				padding:12px;
+				text-align:center;
 			}
 			div.invisibleinput {
 				display:inline;
@@ -31,33 +40,51 @@
 				overflow:hidden;
 			}
 			div.invisibleinput input {
+				width:0;
 				opacity:0;
 				filter:alpha(opacity=0);
 			}
-			div#frame {
-				float:left;
-				width:360px;
+			img#picture {
+				width:72%;
+			}
+			div#title {
+				text-align:left;
+				font-size:1.25em;
+				overflow:x;
+			}
+			div#pointcontents {
+				overflow:auto;
+				position:absolute;
+				top:80px;
+				left:12px;
+				right:12px;
+				bottom:12px;
+				text-align:left;
 			}
 			img#picture {
-				width:360px;
+				float:left;
+				margin:6px;
+				display:none;
 			}
 		</style>
 		<script src="assets/script/jquery-3.2.1.min.js"></script>
+		<script src="assets/script/moment.min.js"></script>
 	</head>
 	<body>
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		<div id="map"></div>
+		<div id='loading'>Loading</div>
 		<div id="popup" onclick="$('#hid').focus();">
-			<span id='prev' onclick='popupPrevPoint();'>prev</span>
-			<span onclick="closePopup">exit</span>
-			<span id='next' onclick="popupNextPoint();">next</span>
+			<input type='image' onclick='popupPrevPoint();return false;' src='assets/icons/prev.png' />
+			<input type='image' onclick='closePopup();return false;' src='assets/icons/close.png' />
+			<input type='image' onclick='popupNextPoint();return false;' src='assets/icons/next.png' />
 			<div class='invisibleinput'><input type='text' id='hid' /></div>
 			<div id='title'></div>
-			<div id='frame'>
-				<img id='picture' />
+			<div id='pointcontents'>
+				<img id='picture' alt='Image Not Found' />
+				<span id="comments"></span>
 			</div>
-			<span id="comments"></span>
 		</div>
 		<script>
 			$(function(){$('#hid').bind('keydown', keydown);});
@@ -129,16 +156,26 @@
 				//} else {
 				//	$('#next').show();
 				//}
-				$('#title').html((point.data_i).toString() + ' - ' + point.timestamp);
+				
+				var title;
+				if (point.datetime.hours() == 0 && point.datetime.minutes() == 0 && point.datetime.seconds() == 0) {
+					previous = moment(point.datetime).add(-1, 'days');
+					title = previous.format('MMMM D, YYYY') + ', end of day';
+				} else {
+					title = point.datetime.format('MMMM D, YYYY, h:mm a') + ' ' + point.timezone
+				}
+				$('#title').html(title);// + ' - ' + (point.data_i).toString());
 				$('#comments').html(point.comments);
 				if(point.image) {
-					$('#frame').show();
+					$('#picture').show();
 					$('#picture').attr('src', point.image);
 				} else {
-					$('#frame').hide();
+					$('#picture').hide();
+					$('#picture').attr('src', '');
 				}
 
 				$('#popup').show();
+ 				$('#hid').focus();
 			}
 			function getPopupPoint(i) {
 				return function()
@@ -219,8 +256,10 @@
 			function displayPoints() {
 				var polyline = null;
 				for (var i = 0; i < points.length; i += 1) {
+					//setTimeout(function() { $('div#loading').html('Loading ' + (i + 1) + ' of ' + points.length) }, 0);
 					polyline = displayPoint(i, polyline, map);
 				}
+				$('div#loading').hide();
 			}
 
 			function receiveData(response) {
@@ -242,12 +281,20 @@
 
 				if (exclude && !exclude.startsWith('Path')) continue;
 
+					timezone = datatable.getValue(i,5);
+					timeoffset = timezone == 'ADT' ? -3 :
+						timezone == 'EDT' ? -4 :
+						timezone == 'CDT' ? -5 :
+						timezone == 'CSD' || timezone == 'MDT' ? -6 :
+						timezone == 'PDT' ? -7 : 0;
+
 					point = {
 						data_i : i + 1,
 						exclude : exclude,
 						source : datatable.getValue(i,1),
 						label : datatable.getValue(i,2),
-						datetime : datatable.getValue(i,4),
+						datetime : moment(datatable.getValue(i,4)).add(timeoffset, 'hours'),
+						timezone : timezone,
 						lat : datatable.getValue(i,6),
 						lng : datatable.getValue(i,7),
 						next_lat : i == datatableNumberOfRows - 1 ? null : datatable.getValue(i+1,6),
