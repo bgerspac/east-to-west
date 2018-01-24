@@ -5,14 +5,44 @@
 		<meta charset="utf-8">
 		<title>2017 East-to-West Cycle Tour Locations</title>
 		<style>
+			div#popup {
+				display:none;
+				position:absolute;
+				bottom:0;
+				right:0;
+				background-color:#ffffff;
+				text-align:center;
+			}
+			#map {
+				position:absolute;
+				top:0;
+				bottom:0;
+				left:0;
+				right:0;
+			}
+			@media all and (orientation:landscape) {
+				#map.open {
+					right:60%;
+				}
+				#popup {
+					top:0;
+					left:40%;
+				}
+			}
+			@media all and (orientation:portrait) {
+				#map.open {
+					bottom:60%;
+				}
+				#popup {
+					top:40%;
+					left:0;
+				}
+			}
 			html, body {
 				height: 100%;
 				margin: 0;
 				padding: 0;
 				font-family: "Open Sans", "Lucida Sans", Tahoma, Verdana;
-			}
-			#map {
-				height: 100%;
 			}
 			div#loading {
 				position:absolute;
@@ -36,40 +66,27 @@
 				overflow:auto;
 				background:rgba(255,255,255,1.0);
 			}
-			div#popup {
-				display:none;
-				position:absolute;
-				top:56px;
-				left:10px;
-				height:80%;
-				width:32%;
-				background-color:#ffffff;
-				border-radius:8px;
-				padding:12px;
-				text-align:center;
-			}
-			img#picture {
-				width:72%;
-			}
 			div#title {
 				text-align:left;
 				font-size:0.8em;
-				overflow:x;
+				overflow:hidden;
 				font-color:#333333;
 			}
 			div#pointcontents {
 				overflow:auto;
 				position:absolute;
-				top:80px;
-				left:12px;
-				right:12px;
-				bottom:12px;
+				top:32px;
+				left:0;
+				right:0;
+				bottom:0;
 				text-align:left;
 			}
+			#comments {
+				padding:8px;
+			}
 			img#picture {
-				float:left;
-				margin:6px;
 				display:none;
+				width:100%;
 			}
 			.ready {
 			}
@@ -92,13 +109,25 @@
 			</div>
 		</div>
 		<div id="popup">
-			<input type='image' onclick='popupPrevPoint();return false;' src='assets/icons/prev.png' />
-			<input type='image' onclick='closePopup();return false;' src='assets/icons/close.png' />
-			<input type='image' onclick='popupNextPoint();return false;' src='assets/icons/next.png' />
-			<div id='title'></div>
+			<div style="position:absolute;top:0;right:0;width:100px;height:32px;background-color:#deebf7;">
+				<svg onclick='popupPrevPoint();' height="32px" width="28px">
+					<polygon points="28,0 0,16 28,32" style="fill:black;" />
+				</svg>
+				<svg onclick='closePopup();' height="32px" width="32px">
+					<polygon points="0,8 24,32 32,24 8,0" />
+					<polygon points="0,24 8,32 32,8 24,0" />
+				</svg>
+				<svg onclick='popupNextPoint();' height="32px" width="28px">
+					<polygon points="0,0 28,16 0,32" style="fill:black;" />
+				</svg>
+			</div>
+			<div id='title' style="position:absolute;top:0;left:0;right:100px;height:32px;overflow:hidden;padding-left:6px;padding-top:1px;background-color:#deebf7;">
+				<span id="datetime"></span><br />
+				<span id="location"></span>
+			</div>
 			<div id='pointcontents'>
 				<img id='picture' alt='Image Not Found' />
-				<span id="comments"></span>
+				<div id="comments" />
 			</div>
 		</div>
 		<script>
@@ -129,7 +158,11 @@
 				}
 			}
 			function closePopup() {
+				centre = map.getCenter();
 				$('#popup').hide('fade');
+				$('#map').removeClass('open');
+				google.maps.event.trigger(map, 'resize');
+				map.panTo(centre);
 			}
 			function changeZoom(delta) {
 				map.setZoom(map.getZoom() + delta);
@@ -168,7 +201,6 @@
 				//	
 				//}
 				//next_point = ((i + 1) < points.length) ? points[i + 1] : null;
-				recentre(point.lat, point.lng)
 				$('#popup').attr('i', i);
 
 				//next = $('#next');
@@ -178,16 +210,18 @@
 				//	$('#next').show();
 				//}
 				
-				var title;
-				title = (point.lat).toFixed(5) + '&deg; N, ' + (-point.lng).toFixed(5) + '&deg; W on ';
+				var location;
+				var datetime;
+				location = (point.lat).toFixed(5) + '&deg; N, ' + (-point.lng).toFixed(5) + '&deg; W';
 				if (point.datetime.hours() == 0 && point.datetime.minutes() == 0 && point.datetime.seconds() == 0) {
 					previous = moment(point.datetime).add(-1, 'days');
-					title += previous.format('MMMM D, YYYY') + ' at day&apos;s end';
+					datetime = previous.format('MMMM D, YYYY') + ' at day&apos;s end';
 				} else {
-					title += point.datetime.format('MMMM D, YYYY \\a\\t h:mm a') + ' ' + point.timezone
+					datetime = point.datetime.format('MMMM D, YYYY \\a\\t h:mm a') + ' ' + point.timezone
 				}
-				title += ' (#' + point.data_i.toString() + ')';
-				$('#title').html(title);// + ' - ' + (point.data_i).toString());
+				location += ' (#' + point.data_i.toString() + ')';
+				$('#location').html(location);// + ' - ' + (point.data_i).toString());
+				$('#datetime').html(datetime);
 				$('#comments').html(point.comments);
 				if(point.image) {
 					$('#picture').show();
@@ -198,6 +232,10 @@
 				}
 
 				$('#popup').show('fade');
+				$('#map').addClass('open');
+				google.maps.event.trigger(map, 'resize');
+				recentre(point.lat, point.lng);
+				//setTimeout(function() { recentre(point.lat, point.lng); }, 100);
 			}
 			function getPopupPoint(i) {
 				return function()
