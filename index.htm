@@ -118,7 +118,7 @@
 				</p>
 			</div>
 		</div>
-		<div id="popup" i=''>
+		<div id="popup" point_index=''>
 			<div style="position:absolute;top:0;right:0;width:100px;height:32px;background-color:#deebf7;">
 				<svg xmlns="http://www.w3.org/2000/svg" onclick='popupPrevPoint();' height="32px" width="28px">
 					<polygon points="28,0 0,16 28,32" />
@@ -185,38 +185,36 @@
 				popupAnotherPoint(function(i) { return i === null ? points.length - 1 : i - 1; } );
 			}
 			function popupAnotherPoint(other) {
-				i = $('#popup').attr('i')
-				if (i) {
-					i = parseInt(i);
+				point_index = $('#popup').attr('point_index')
+				if (point_index) {
+					point_index = parseInt(point_index);
 				} else {
-					i = null;
+					point_index = null;
 				}
 				another_point = null;
 				relocationpoints = [];
 
-				for (i = other(i); !another_point && i >= 0 && i < points.length; i = other(i)) {
-					checkpoint = points[i];
+				for (point_index = other(point_index); !another_point && point_index >= 0 && point_index < points.length; point_index = other(point_index)) {
+					checkpoint = points[point_index];
 					//relocationpoints.push(checkpoint);
 					//recentre(checkpoint.lat, checkpoint.lng);
-					if (checkpoint.source == 'Manual' || checkpoint.source.startsWith('Picture Set')) {
+					if (checkpoint.icon) {
 						another_point = checkpoint;
-						popupPoint(i);
-						$('#popup').attr('i', i);
+						popupPoint(point_index);
 					}
 				}
 				if (!another_point) {
 					closePopup();
-					$('#popup').attr('i', '');
+					$('#popup').attr('point_index', '');
 				}
 				//relocateslow(relocationpoints, i, function() { popupPoint(i); });
 			}
-			function popupPoint(i) {
-				point = points[i];
+			function popupPoint(point_index) {
+				point = points[point_index];
 				//next_point = null;
 				//while (!next_point && ++i < points.length) {
 				//	checkpoint = points[i];
 				//	recentre(checkpoint.lat, checkpoint.lng);
-				//	
 				//}
 				//next_point = ((i + 1) < points.length) ? points[i + 1] : null;
 
@@ -238,9 +236,9 @@
 				}
 
 				if (debug) {
-					location += ' (#' + point.data_i.toString() + ')';
+					location += ' (#' + point.data_index.toString() + ')';
 				}
-				$('#location').html(location);// + ' - ' + (point.data_i).toString());
+				$('#location').html(location);// + ' - ' + (point.data_index).toString());
 				$('#datetime').html(datetime);
 				var content = '';
 				if (point.comments) {
@@ -254,34 +252,37 @@
 				$('#comments').html(content);
 				if(point.image) {
 					$('#picture').show();
-					$('#picture').attr('src', point.image);
+					$('#picture').attr('src', 'assets/pictures/' + point.image);
 				} else {
 					$('#picture').hide();
 					$('#picture').attr('src', '');
 				}
 
+				$('#popup').attr('point_index', point_index);
 				$('#popup').show('fade');
 				$('#map').addClass('open');
 				google.maps.event.trigger(map, 'resize');
 				recentre(point.lat, point.lng);
 				//setTimeout(function() { recentre(point.lat, point.lng); }, 100);
 			}
-			function getPopupPoint(i) {
+			function getPopupPoint(point_index) {
 				return function()
 				{
-					popupPoint(i);
+					popupPoint(point_index);
 				};
 			}
 
 			var origin;
 			var size3x3;
 			var size5x5;
+			var size12x12;
 			var anchor3x3;
 			var anchor5x5;
+			var anchor12x12;
 
-			function displayPoint(i, polyline, map) {
+			function displayPoint(point_index, polyline, map) {
 
-				point = points[i]
+				point = points[point_index]
 				
 				if (point.exclude == 'Path Start') {
 					polyline = [];
@@ -291,19 +292,17 @@
 					polyline.push({lat : point.lat, lng: point.lng});
 				}
 
-				icon = point.source == "Manual" ? "bullet_red.png" :
-					point.source == "Picture Set A" ? "bullet_yellow.png" :
-					point.source == "Picture Set B" ? "bullet_yellow.png" :
-					point.source == "Picture Set C" ? "bullet_yellow.png" :
-					point.source == "Picture Set D" ? "bullet_yellow.png" :
-					point.source == "Google" ? "3x3blue.png" :
-						"3x3black.png";
-				small = icon == "3x3black.png" || icon == "3x3blue.png";
-				iconsize = small ? size3x3 : size5x5;
-				iconanchor = small ? anchor3x3 : anchor5x5;
-
-				if (small) {
+				if (point.icon) {
+					icon = point.icon.endsWith(".svg") ? point.icon :
+						point.icon.startsWith("Hotel") || point.icon.startsWith("House") || point.icon.startsWith("Tent") ? "bed.svg" :
+						"bullet_yellow.png";
 				} else {
+					icon = "bullet_yellow.png";
+				}
+
+				if (point.icon) {
+					iconsize = icon.endsWith(".svg") ? size12x12 : size5x5;
+					iconanchor = icon.endsWith(".svg") ? anchor12x12 : anchor5x5;
 					iconobject = {
 							url : 'assets/icons/' + icon,
 							size : iconsize,
@@ -317,24 +316,16 @@
 						icon : iconobject,
 						map: map
 					});
-					marker.addListener('click', getPopupPoint(i,
-						point.datetime,
-						point.comments,
-						point.source.startsWith('Picture Set') ? point.label : null,
-						point.lat,
-						point.lng,
-						point.next_lat,
-						point.next_lng)
-					);
+					marker.addListener('click', getPopupPoint(point_index));
 				}
 
 				if (point.exclude == 'Path Finish') {
 					var cyclepath = new google.maps.Polyline({
 						path: polyline,
 						geodesic: true,
-						strokeColor: '#000000',
+						strokeColor: '#333333',
 						strokeOpacity: 0.7,
-						strokeWeight: 1.5
+						strokeWeight: 2
 					});
 					cyclepath.setMap(map);
 				}
@@ -354,25 +345,27 @@
 			}
 
 			function receiveData(response) {
-
 				datatable = response.getDataTable();
 				datatableNumberOfRows = datatable.getNumberOfRows();
 				
 				origin = new google.maps.Point(0, 0);
 				size3x3 = new google.maps.Size(3, 3);
 				size5x5 = new google.maps.Size(5, 5);
+				size12x12 = new google.maps.Size(20, 20);
 				anchor3x3 = new google.maps.Point(1, 1);
 				anchor5x5 = new google.maps.Point(2, 2);
+				anchor12x12 = new google.maps.Point(10, 10);
+				
 
 				var exclude;
 
-				for (var i = 1; i < datatableNumberOfRows; i += 1) {
+				for (var i = 0; i < datatableNumberOfRows; i += 1) {
 
 					exclude = datatable.getValue(i,0);
 
 				if (exclude && !exclude.startsWith('Path')) continue;
 
-					timezone = datatable.getValue(i,5);
+					timezone = datatable.getValue(i,8);
 					timeoffset = timezone == 'ADT' ? -3 :
 						timezone == 'EDT' ? -4 :
 						timezone == 'CDT' ? -5 :
@@ -380,21 +373,17 @@
 						timezone == 'PDT' ? -7 : 0;
 
 					point = {
-						data_i : i + 1,
+						data_index : i + 2,
 						exclude : exclude,
 						source : datatable.getValue(i,1),
-						label : datatable.getValue(i,2),
-						datetime : moment(datatable.getValue(i,4)).add(timeoffset, 'hours'),
+						icon : datatable.getValue(i,2),
+						image : datatable.getValue(i,3),
+						datetime : moment(datatable.getValue(i,9)).add(timeoffset, 'hours'),
 						timezone : timezone,
-						lat : datatable.getValue(i,6),
-						lng : datatable.getValue(i,7),
-						next_lat : i == datatableNumberOfRows - 1 ? null : datatable.getValue(i+1,6),
-						next_lng : i == datatableNumberOfRows - 1 ? null : datatable.getValue(i+1,7),
-						comments : datatable.getValue(i,3)
+						lat : datatable.getValue(i,5),
+						lng : datatable.getValue(i,6),
+						comments : datatable.getValue(i,4)
 					};
-					if (point.source.startsWith('Picture Set')) {
-						point.image = 'assets/pictures/' + point.label;
-					}
 					points.push(point);
 				}
 				displayPoints();
@@ -416,7 +405,7 @@
 					keyboardShortcuts: false
 				});
 
-				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/1qSjDuGdj6l9aj-ghjLUjHrESR5E4NfUIVvnlb0PPmzE/gviz/tq?sheet=Actual&tq=select%20A,B,C,D,E,F,H,I');
+				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/1qSjDuGdj6l9aj-ghjLUjHrESR5E4NfUIVvnlb0PPmzE/gviz/tq?sheet=Actual&tq=select%20A,B,C,D,E,F,G,H,I,J');
 				query.send(receiveData);
 			}
 			
