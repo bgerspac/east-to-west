@@ -111,7 +111,7 @@
 		<div id="map"></div>
 		<div id='loading'>
 			<div id='intro'>
-				<p>I cycled across Canada during the summer of 2017. This is the story. It starts at S in Oakville, ON. From there, use the arrow buttons on screen or the arrow keys to navigate through the tour. (The up and down arrow keys can be used to zoom the map.)</p>
+				<p>Hi, I'm Brian. I cycled across Canada during the summer of 2017. The story starts at the <img src="assets/icons/play.svg" /> icon in Oakville, Ontario. From there, use the arrow buttons on screen or the arrow keys on your keyboard to navigate through the tour. (The up and down arrow keys can be used to zoom the map.)</p>
 				<p>I acknowledge that this tour took place on the traditional territories of the Mi'kmaq, Maliseet, Abenaki, Haudenosaunee, Mohawk, Algonquin, Ojibway/Chippewa, Odawa, M&eacute;tis, Assiniboine, Blackfoot, Ktunaxa, Tsuut'ina, Stoney, Shuswap, Sinixt, Nlaka'pamux, Sto:lo, Tsleil-Waututh, Katzie, Saanich, Tsawwassen, Qayqayt, Musqueam, and Squamish peoples.</p>
 				<p>
 					<input type="button" id="start" onclick="$('#loading').hide('fade');document.onkeydown = keydown;return false;" disabled='true' value="Loading..." />
@@ -293,16 +293,15 @@
 				}
 
 				if (point.icon) {
-					icon = point.icon.endsWith(".svg") ? point.icon :
-						point.icon.startsWith("Hotel") || point.icon.startsWith("House") || point.icon.startsWith("Tent") ? "bed.svg" :
+					icon = point.icon.endsWith(".svg") || point.icon.endsWith(".png") ? point.icon :
 						"bullet_yellow.png";
 				} else {
 					icon = "bullet_yellow.png";
 				}
 
 				if (point.icon) {
-					iconsize = icon.endsWith(".svg") ? size12x12 : size5x5;
-					iconanchor = icon.endsWith(".svg") ? anchor12x12 : anchor5x5;
+					iconsize = icon.endsWith(".svg") || icon.endsWith(".png") ? size12x12 : size5x5;
+					iconanchor = icon.endsWith(".svg") || icon.endsWith(".png") ? anchor12x12 : anchor5x5;
 					iconobject = {
 							url : 'assets/icons/' + icon,
 							size : iconsize,
@@ -316,6 +315,7 @@
 						icon : iconobject,
 						map: map
 					});
+					marker.setOpacity(0.9);
 					marker.addListener('click', getPopupPoint(point_index));
 				}
 
@@ -323,7 +323,7 @@
 					var cyclepath = new google.maps.Polyline({
 						path: polyline,
 						geodesic: true,
-						strokeColor: '#333333',
+						strokeColor: '#ff7700',
 						strokeOpacity: 0.7,
 						strokeWeight: 2
 					});
@@ -378,7 +378,7 @@
 						source : datatable.getValue(i,1),
 						icon : datatable.getValue(i,2),
 						image : datatable.getValue(i,3),
-						datetime : moment(datatable.getValue(i,9)).add(timeoffset, 'hours'),
+						datetime : moment(datatable.getValue(i,7)).add(timeoffset, 'hours'),
 						timezone : timezone,
 						lat : datatable.getValue(i,5),
 						lng : datatable.getValue(i,6),
@@ -401,11 +401,11 @@
 				map = new google.maps.Map(document.getElementById('map'), {
 					zoom: 4,
 					center: {lat: 47, lng: -91},
-					mapTypeId: google.maps.MapTypeId.TERRAIN,
+					mapTypeId: google.maps.MapTypeId.SATELLITE,
 					keyboardShortcuts: false
 				});
 
-				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/1qSjDuGdj6l9aj-ghjLUjHrESR5E4NfUIVvnlb0PPmzE/gviz/tq?sheet=Actual&tq=select%20A,B,C,D,E,F,G,H,I,J');
+				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/1qSjDuGdj6l9aj-ghjLUjHrESR5E4NfUIVvnlb0PPmzE/gviz/tq?sheet=Actual&tq=select%20A,B,C,D,E,F,G,H,I');
 				query.send(receiveData);
 			}
 			
