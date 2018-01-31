@@ -109,7 +109,7 @@ function popupPoint(point_index) {
 	$('#comments').html(content);
 	if(point.image) {
 		$('#picture').show();
-		$('#picture').attr('src', 'assets/pictures/' + point.image);
+		$('#picture').attr('src', 'pictures/' + point.image);
 	} else {
 		$('#picture').hide();
 		$('#picture').attr('src', '');
@@ -160,7 +160,7 @@ function displayPoint(point_index, polyline, map) {
 		iconsize = icon.endsWith(".svg") || icon.endsWith(".png") ? size12x12 : size5x5;
 		iconanchor = icon.endsWith(".svg") || icon.endsWith(".png") ? anchor12x12 : anchor5x5;
 		iconobject = {
-				url : 'assets/icons/' + icon,
+				url : 'icon/' + icon,
 				size : iconsize,
 				anchor : iconanchor,
 				origin : origin,
