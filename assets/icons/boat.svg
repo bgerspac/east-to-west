@@ -1,7 +1,7 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"> 
 <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20">
-	<circle cx="10" cy="10" r="8" fill="blue" />
-	<polygon points="4,12 6,14 14,14 16,12" fill="white" />
-	<polygon points="10,11 15,11 10,3" fill="white" />
-	<polygon points="9,11 6,11 9,5" fill="white" />
+	<circle cx="10" cy="10" r="8" fill="blue" stroke="lightgray" stroke-width="1" />
+	<polygon points="4,12 6,14 14,14 16,12" fill="lightgray" />
+	<polygon points="10,11 15,11 10,3" fill="lightgray" />
+	<polygon points="9,11 6,11 9,5" fill="lightgray" />
 </svg>

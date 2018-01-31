@@ -1,5 +1,5 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"> 
 <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20">
-	<circle cx="10" cy="10" r="10" fill="blue" />
-	<polygon points="1,8 1,10 3,10 3,13 5,13 5,10 7,9 7,13 9,13 9,8 11,8 11,13 13,13 13,9 15,10 15,13 17,13 17,10 19,10 19,8 16,8 12,6 8,6 4,8" fill="white" />
+	<circle cx="10" cy="10" r="9" fill="blue" stroke="lightgray" stroke-width="1" />
+	<polygon points="3,7 17,7 17,9 15,9 14,11 14,14 12,14 12,11 11,9 9,9 8,11 8,14 6,14 6,11 5,9 3,9" fill="lightgray" />
 </svg>
