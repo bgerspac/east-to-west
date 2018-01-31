@@ -5,15 +5,15 @@ var iconsize;
 var iconanchor;
 
 function keydown(event) {
-	if (event.keyCode == 39) {
+	if (event.keyCode == 39) { // right arrow
 		popupNextPoint();
-	} else if (event.keyCode == 37) {
+	} else if (event.keyCode == 37) { // left arrow
 		popupPrevPoint();
-	} else if (event.keyCode == 38) {
+	} else if (event.keyCode == 38) { // up arrow
 		changeZoom(1);
-	} else if (event.keyCode == 40) {
+	} else if (event.keyCode == 40) { // down arrow
 		changeZoom(-1);
-	} else if (event.keyCode == 27) {
+	} else if (event.keyCode == 27) { // esc
 		closePopup();
 	}
 }
@@ -35,6 +35,98 @@ function drawMap() {
 }
 function changeZoom(delta) {
 	map.setZoom(map.getZoom() + delta);
+}
+
+function receiveData(response) {
+	datatable = response.getDataTable();
+	datatableNumberOfRows = datatable.getNumberOfRows();
+	
+	origin = new google.maps.Point(0, 0);
+	iconsize = new google.maps.Size(20, 20);
+	iconanchor = new google.maps.Point(10, 10);
+
+	var exclude;
+
+	for (var i = 0; i < datatableNumberOfRows; i += 1) {
+
+		exclude = datatable.getValue(i,0);
+
+	if (exclude && !exclude.startsWith('Path')) continue;
+
+		timezone = datatable.getValue(i,8);
+		timeoffset = timezone == 'ADT' ? -3 :
+			timezone == 'EDT' ? -4 :
+			timezone == 'CDT' ? -5 :
+			timezone == 'CSD' || timezone == 'MDT' ? -6 :
+			timezone == 'PDT' ? -7 : 0;
+
+		point = {
+			data_index : i + 2,
+			exclude : exclude,
+			source : datatable.getValue(i,1),
+			icon : datatable.getValue(i,2),
+			image : datatable.getValue(i,3),
+			datetime : moment(datatable.getValue(i,7)).add(timeoffset, 'hours'),
+			timezone : timezone,
+			lat : datatable.getValue(i,5),
+			lng : datatable.getValue(i,6),
+			comments : datatable.getValue(i,4)
+		};
+		points.push(point);
+	}
+	buildRoute();
+}
+
+function addPointToRoute(point_index, polyline, map) {
+	point = points[point_index]
+	
+	if (point.exclude == 'Path Start') {
+		polyline = [];
+	}
+	
+	if (polyline && point.exclude != 'Path') {
+		polyline.push({lat : point.lat, lng: point.lng});
+	}
+
+	if (point.icon) {
+		iconobject = {
+				url : 'icon/' + point.icon,
+				size : iconsize,
+				anchor : iconanchor,
+				origin : origin,
+				zIndex: google.maps.Marker.MAX_ZINDEX + 1
+			};
+
+		var marker = new google.maps.Marker({
+			position : { lat : point.lat, lng : point.lng },
+			icon : iconobject,
+			map: map
+		});
+		marker.setOpacity(0.9);
+		marker.addListener('click', getPopupPoint(point_index));
+	}
+
+	if (point.exclude == 'Path Finish') {
+		var cyclepath = new google.maps.Polyline({
+			path: polyline,
+			geodesic: true,
+			strokeColor: '#ff7700',
+			strokeOpacity: 0.7,
+			strokeWeight: 2
+		});
+		cyclepath.setMap(map);
+	}
+
+	return polyline;
+}
+function buildRoute() {
+	var polyline = null;
+	for (var i = 0; i < points.length; i += 1) {
+		polyline = addPointToRoute(i, polyline, map);
+	}
+	$('input#start').attr('disabled', false);
+	$('input#start').attr('value', 'Start');
+	$('input#start').effect('bounce', 'slow');
 }
 
 function popupPoint(point_index) {
@@ -119,98 +211,4 @@ function getPopupPoint(point_index) {
 	{
 		popupPoint(point_index);
 	};
-}
-
-
-function displayPoint(point_index, polyline, map) {
-
-	point = points[point_index]
-	
-	if (point.exclude == 'Path Start') {
-		polyline = [];
-	}
-	
-	if (polyline && point.exclude != 'Path') {
-		polyline.push({lat : point.lat, lng: point.lng});
-	}
-
-	if (point.icon) {
-		iconobject = {
-				url : 'icon/' + point.icon,
-				size : iconsize,
-				anchor : iconanchor,
-				origin : origin,
-				zIndex: google.maps.Marker.MAX_ZINDEX + 1
-			};
-
-		var marker = new google.maps.Marker({
-			position : { lat : point.lat, lng : point.lng },
-			icon : iconobject,
-			map: map
-		});
-		marker.setOpacity(0.9);
-		marker.addListener('click', getPopupPoint(point_index));
-	}
-
-	if (point.exclude == 'Path Finish') {
-		var cyclepath = new google.maps.Polyline({
-			path: polyline,
-			geodesic: true,
-			strokeColor: '#ff7700',
-			strokeOpacity: 0.7,
-			strokeWeight: 2
-		});
-		cyclepath.setMap(map);
-	}
-
-	return polyline;
-}
-function displayPoints() {
-	var polyline = null;
-	for (var i = 0; i < points.length; i += 1) {
-		polyline = displayPoint(i, polyline, map);
-	}
-	$('input#start').attr('disabled', false);
-	$('input#start').attr('value', 'Start');
-	$('input#start').effect('bounce', 'slow');
-}
-
-function receiveData(response) {
-	datatable = response.getDataTable();
-	datatableNumberOfRows = datatable.getNumberOfRows();
-	
-	origin = new google.maps.Point(0, 0);
-	iconsize = new google.maps.Size(20, 20);
-	iconanchor = new google.maps.Point(10, 10);
-
-	var exclude;
-
-	for (var i = 0; i < datatableNumberOfRows; i += 1) {
-
-		exclude = datatable.getValue(i,0);
-
-	if (exclude && !exclude.startsWith('Path')) continue;
-
-		timezone = datatable.getValue(i,8);
-		timeoffset = timezone == 'ADT' ? -3 :
-			timezone == 'EDT' ? -4 :
-			timezone == 'CDT' ? -5 :
-			timezone == 'CSD' || timezone == 'MDT' ? -6 :
-			timezone == 'PDT' ? -7 : 0;
-
-		point = {
-			data_index : i + 2,
-			exclude : exclude,
-			source : datatable.getValue(i,1),
-			icon : datatable.getValue(i,2),
-			image : datatable.getValue(i,3),
-			datetime : moment(datatable.getValue(i,7)).add(timeoffset, 'hours'),
-			timezone : timezone,
-			lat : datatable.getValue(i,5),
-			lng : datatable.getValue(i,6),
-			comments : datatable.getValue(i,4)
-		};
-		points.push(point);
-	}
-	displayPoints();
 }
