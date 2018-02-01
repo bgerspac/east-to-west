@@ -43,6 +43,9 @@ div#intro {
 	padding:12px;
 	line-height:1.5em;
 }
+div#intro img {
+	vertical-align:middle;
+}
 
 div#popup {
 	display:none;
