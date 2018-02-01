@@ -2,7 +2,7 @@ html, body {
 	height: 100%;
 	margin: 0;
 	padding: 0;
-	font-family: "Open Sans", "Lucida Sans", Tahoma, Verdana;
+	font-family: 'Open Sans', 'Lucida Sans', Tahoma, Verdana, Ubuntu, Roboto;
 }
 p:first-child {
 	margin-top:0;
@@ -41,6 +41,7 @@ div#intro {
 	overflow:auto;
 	background:rgba(255,255,255,1.0);
 	padding:12px;
+	line-height:1.5em;
 }
 
 div#popup {
@@ -51,7 +52,7 @@ div#popup {
 	background-color:#ffffff;
 	text-align:center;
 }
-div#control {
+div#popup div#control {
 	position:absolute;
 	top:0;
 	right:0;
@@ -59,8 +60,12 @@ div#control {
 	height:32px;
 	background-color:#deebf7;
 }
-div#control polygon {
-	fill:#222233;
+div#control img {
+	height:32px;
+	width:32px;
+}
+div#control img.narrow {
+	width:28px;
 }
 div#title {
 	text-align:left;

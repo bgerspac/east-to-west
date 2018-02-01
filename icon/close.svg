@@ -1,0 +1,5 @@
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"> 
+<svg xmlns="http://www.w3.org/2000/svg" height="32" width="32">
+	<polygon points="0,8 24,32 32,24 8,0" fill="#222233" />
+	<polygon points="0,24 8,32 32,8 24,0" fill="#222233" />
+</svg>
