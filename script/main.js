@@ -160,7 +160,7 @@ function popupPoint(point_index) {
 	$("#comments").html(content);
 	if(point.image) {
 		$("#picture").show();
-		$("#picture").attr("src", pictureFolderUrl + point.image);
+		$("#picture").attr("src", picture_folder_url + point.image);
 	} else {
 		$("#picture").hide();
 		$("#picture").attr("src", "");
