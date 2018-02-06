@@ -101,6 +101,26 @@ img#picture {
 #comments {
 	padding:8px;
 }
+#comments .division {
+	text-align:center;
+}
+#comments .division .name {
+	margin-bottom:0;
+}
+#comments .division .motto {
+	font-style:italic;
+	margin-top:0;
+}
+#comments table.progress  {
+	margin-left:auto;
+	margin-right:auto;
+	font-size:0.9em;
+	border-collapse:collapse;
+}
+#comments table.progress td:nth-child(2) {
+	text-align:right;
+	padding-left: 16px;
+}
 
 @media all and (orientation:landscape) {
 	#map.open {

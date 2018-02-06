@@ -152,8 +152,12 @@ function popupPoint(point_index) {
 	if (point.comments) {
 		var comments = point.comments.split("\n");
 		for (var i = 0; i < comments.length; i += 1) {
-			if (comments[i].trim()) {
-				content += "<p>" + comments[i].trim() + "</p>";
+			var comment = comments[i].trim();
+			if (comment) {
+				if (comment[0] != "<") {
+					comment = "<p>" + comment + "</p>";
+				}
+				content += comment;
 			}
 		}
 	}
