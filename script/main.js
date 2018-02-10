@@ -58,7 +58,7 @@ function receiveData(response) {
 		timeoffset = timezone == "ADT" ? -3 :
 			timezone == "EDT" ? -4 :
 			timezone == "CDT" ? -5 :
-			timezone == "CSD" || timezone == "MDT" ? -6 :
+			timezone == "CST" || timezone == "MDT" ? -6 :
 			timezone == "PDT" ? -7 : 0;
 
 		point = {
