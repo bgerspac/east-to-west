@@ -162,11 +162,11 @@ function popupPoint(point_index) {
 		}
 	}
 	$("#comments").html(content);
+	$("#picture").hide();
 	if(point.image) {
-		$("#picture").show();
 		$("#picture").attr("src", picture_folder_url + point.image);
+		$("#picture").show();
 	} else {
-		$("#picture").hide();
 		$("#picture").attr("src", "");
 	}
 
