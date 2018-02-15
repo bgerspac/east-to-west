@@ -6,6 +6,7 @@ var iconanchor;
 var picture_folder_url = "pictures/";
 
 function keydown(event) {
+	closeIntro();
 	if (event.keyCode == 39) { // right arrow
 		popupNextPoint();
 	} else if (event.keyCode == 37) { // left arrow
@@ -128,9 +129,22 @@ function buildRoute() {
 	$("input#start").attr("disabled", false);
 	$("input#start").attr("value", "Start");
 	$("input#start").effect("bounce", "slow");
+
+	document.onkeydown=keydown;
 }
 
-function popupPoint(point_index) {
+function closeIntro() {
+	$("#loading").hide("fade");
+}
+
+var preloadimages = [];
+function preload() {
+	for (var i = 0; i < arguments.length; i++) {
+		preloadimages[i] = new Image();
+		preloadimages[i].src = preload.arguments[i];
+	}
+}
+function popupPoint(point_index, other) {
 	point = points[point_index];
 	
 	var location;
@@ -175,6 +189,14 @@ function popupPoint(point_index) {
 	$("#map").addClass("open");
 	google.maps.event.trigger(map, "resize");
 	map.panTo(new google.maps.LatLng(point.lat, point.lng));
+
+	for (image_index = other(point_index); image_index >= 0 && image_index < points.length; image_index = other(image_index)) {
+		checkpoint = points[point_index];
+		if (checkpoint.image) {
+			preload(picture_folder_url + checkpoint.image);
+			break;
+		}
+	}
 }
 function closePopup() {
 	centre = map.getCenter();
@@ -203,7 +225,7 @@ function popupAnotherPoint(other) {
 		checkpoint = points[point_index];
 		if (checkpoint.icon) {
 			another_point = checkpoint;
-			popupPoint(point_index);
+			popupPoint(point_index, other);
 		}
 	}
 	if (!another_point) {
@@ -214,6 +236,6 @@ function popupAnotherPoint(other) {
 function getPopupPoint(point_index) {
 	return function()
 	{
-		popupPoint(point_index);
+		popupPoint(point_index, function(i) { return i === null ? 0 : i + 1; });
 	};
 }
