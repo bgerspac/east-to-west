@@ -3,7 +3,7 @@
 	<head>
 		<meta name='viewport' content='initial-scale=1.0, user-scalable=no'>
 		<meta charset='utf-8'>
-		<title>Canada East to West in 2017</title>
+		<title></title>
 		<link rel='stylesheet' type='text/css' href='style/main.css'></link>
 		<script src='script/jquery-3.2.1.min.js'></script>
 		<script src='script/jquery-ui-1.12.1/jquery-ui.min.js'></script>
@@ -18,10 +18,10 @@
 
 		<div id='loading'>
 			<div id='intro'>
-				<p>Hi, I'm Brian. I cycled across Canada during the summer of 2017. The story starts at the <img src='icon/play.svg' /> marker in Oakville, Ontario. From there, use the arrow buttons on screen or the arrow keys on your keyboard to navigate forward and back through the tour. (The up and down arrow keys can be used to zoom in and out.)</p>
-				<p>I would like to acknowledge that this tour took place on the traditional territories of the Mi'kmaq, Maliseet, Abenaki, Haudenosaunee, Mohawk, Algonquin, Ojibway/Chippewa, Odawa, M&eacute;tis, Assiniboine, Blackfoot, Ktunaxa, Tsuut'ina, Stoney, Shuswap, Sinixt, Nlaka'pamux, Sto:lo, Tsleil-Waututh, Katzie, Saanich, Tsawwassen, Qayqayt, Musqueam, and Squamish peoples.</p>
+				<div id='userintro'></div>
 				<p>
-					<input type='button' id='start' onclick='closeIntro();return false;' disabled='true' value='Loading...' />
+					<input type='button' id='dotdotdot' value='Loading...' disabled='true' />
+					<input type='button' id='start' onclick='closeIntro();return false;' style='display:none;' value='Start' />
 				</p>
 			</div>
 		</div>
