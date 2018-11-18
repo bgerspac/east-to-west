@@ -209,7 +209,11 @@ function buildRoute() {
 }
 
 function closeIntro() {
-	$("#loading").hide("fade");
+	loading = $("#loading");
+	if (loading.is(":visible")) {
+		$("#loading").hide("fade");
+		popupNextPoint();
+	}
 }
 
 var preloadimages = [];
