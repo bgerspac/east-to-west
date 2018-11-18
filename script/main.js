@@ -20,9 +20,22 @@ function keydown(event) {
 	}
 }
 
-function initMap() {
-	google.charts.load("current", {packages: ["corechart"]});
-	google.setOnLoadCallback(drawMap);
+mapReady = false;
+vizReady = false;
+google.load("visualization", "1", {packages: ["corechart"]});
+google.setOnLoadCallback(vizLoaded);
+function mapLoaded() {
+	mapReady = true;
+	drawMapIfReady();
+}
+function vizLoaded() {
+	vizReady = true;
+	drawMapIfReady();
+}
+function drawMapIfReady() {
+	if (vizReady && mapReady) {
+		drawMap();
+	}
 }
 function drawMap() {
 	map = new google.maps.Map(document.getElementById("map"), {
