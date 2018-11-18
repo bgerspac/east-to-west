@@ -46,6 +46,9 @@ div#intro {
 div#intro img {
 	vertical-align:middle;
 }
+div#intro .technical {
+	font-size: 0.8em;
+}
 
 div#popup {
 	display:none;
