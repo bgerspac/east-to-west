@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name='viewport' content='initial-scale=1.0, user-scalable=no'>
+		<meta charset='utf-8'>
+		<title></title>
+		<link rel='stylesheet' type='text/css' href='style/main.css'></link>
+		<script src='script/jquery-3.2.1.min.js'></script>
+		<script src='script/jquery-ui-1.12.1/jquery-ui.min.js'></script>
+		<script src='script/moment.min.js'></script>
+		<link rel='icon' type='image/png' href='icon/favicon.16x16.png' />
+	</head>
+	<body>
+		<script type='text/javascript' src='https://www.google.com/jsapi'></script>
+		<script type='text/javascript' src='https://www.gstatic.com/charts/loader.js'></script>
+
+		<div id='map'></div>
+
+		<div id='loading'>
+			<div id='intro'>
+				<div id='userintro'></div>
+				<p class='technical'>
+					The story starts at the <img src='icon/play.svg' /> marker. From there, use the arrow buttons on screen or the arrow keys on your keyboard to navigate forward and back through the tour. (The up and down arrow keys can be used to zoom in and out.)
+				</p>
+				<p>
+					<input type='button' id='dotdotdot' value='Loading...' disabled='true' />
+					<input type='button' id='start' onclick='closeIntro();return false;' style='display:none;' value='Start' />
+				</p>
+			</div>
+		</div>
+
+		<div id='popup' point_index=''>
+			<div id='control'>
+				<img src='icon/prev.svg' onclick='popupPrevPoint();' class='narrow' />
+				<img src='icon/close.svg' onclick='closePopup();' />
+				<img src='icon/next.svg' onclick='popupNextPoint();' class='narrow' />
+			</div>
+			<div id='title'>
+				<span id='datetime'></span><br />
+				<span id='location'></span>
+			</div>
+			<div id='pointcontents'>
+				<img id='picture' alt='Image Not Found' />
+				<div id='comments' />
+			</div>
+		</div>
+
+		<script type='text/javascript' src='script/main.js'></script>
+		<script async defer src='https://maps.googleapis.com/maps/api/js?key=AIzaSyA9Op0MuSyx-Rog06OL2UahLIU2hb_wvfA&callback=initMap'></script>
+	</body>
+</html>

@@ -1,48 +1,9 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta name='viewport' content='initial-scale=1.0, user-scalable=no'>
-		<meta charset='utf-8'>
-		<title>Canada East to West in 2017</title>
-		<link rel='stylesheet' type='text/css' href='style/main.css'></link>
-		<script src='script/jquery-3.2.1.min.js'></script>
-		<script src='script/jquery-ui-1.12.1/jquery-ui.min.js'></script>
-		<script src='script/moment.min.js'></script>
-		<link rel='icon' type='image/png' href='icon/favicon.16x16.png' />
 	</head>
-	<body>
-		<script type='text/javascript' src='https://www.google.com/jsapi'></script>
-		<script type='text/javascript' src='https://www.gstatic.com/charts/loader.js'></script>
-
-		<div id='map'></div>
-
-		<div id='loading'>
-			<div id='intro'>
-				<p>Hi, I'm Brian. I cycled across Canada during the summer of 2017. The story starts at the <img src='icon/play.svg' /> marker in Oakville, Ontario. From there, use the arrow buttons on screen or the arrow keys on your keyboard to navigate forward and back through the tour. (The up and down arrow keys can be used to zoom in and out.)</p>
-				<p>I would like to acknowledge that this tour took place on the traditional territories of the Mi'kmaq, Maliseet, Abenaki, Haudenosaunee, Mohawk, Algonquin, Ojibway/Chippewa, Odawa, M&eacute;tis, Assiniboine, Blackfoot, Ktunaxa, Tsuut'ina, Stoney, Shuswap, Sinixt, Nlaka'pamux, Sto:lo, Tsleil-Waututh, Katzie, Saanich, Tsawwassen, Qayqayt, Musqueam, and Squamish peoples.</p>
-				<p>
-					<input type='button' id='start' onclick='closeIntro();return false;' disabled='true' value='Loading...' />
-				</p>
-			</div>
-		</div>
-
-		<div id='popup' point_index=''>
-			<div id='control'>
-				<img src='icon/prev.svg' onclick='popupPrevPoint();' class='narrow' />
-				<img src='icon/close.svg' onclick='closePopup();' />
-				<img src='icon/next.svg' onclick='popupNextPoint();' class='narrow' />
-			</div>
-			<div id='title'>
-				<span id='datetime'></span><br />
-				<span id='location'></span>
-			</div>
-			<div id='pointcontents'>
-				<img id='picture' alt='Image Not Found' />
-				<div id='comments' />
-			</div>
-		</div>
-
-		<script type='text/javascript' src='script/main.js'></script>
-		<script async defer src='https://maps.googleapis.com/maps/api/js?key=AIzaSyA9Op0MuSyx-Rog06OL2UahLIU2hb_wvfA&callback=mapLoaded'></script>
+	<body style='font-family: sans-serif;'>
+		<p>Hi, I'm Brian. I tour by bicycle. Read about it.</p>
+		<p><a href='tour.htm?data=1qSjDuGdj6l9aj-ghjLUjHrESR5E4NfUIVvnlb0PPmzE'>2017</a> <a href='tour.htm?data=1N-uXoycgu2YJtUUNbd0F31konkEsbyiU8A-jkWxyRCY'>2018</a></p>
 	</body>
 </html>

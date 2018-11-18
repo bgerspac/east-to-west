@@ -4,6 +4,26 @@ var origin;
 var iconsize;
 var iconanchor;
 var picture_folder_url = "pictures/";
+COLUMN_IDX_EXCLUDE = 0;
+COLUMN_IDX_SOURCE = 1;
+COLUMN_IDX_ICON = 2;
+COLUMN_IDX_IMAGE = 3;
+COLUMN_IDX_COMMENTS = 4;
+COLUMN_IDX_LAT = 5;
+COLUMN_IDX_LNG = 6;
+COLUMN_IDX_DATE = 7;
+COLUMN_IDX_TIMEZONE = 8;
+
+function GetUrlParameter(sParam) {
+    var sPageURL = window.location.search.substring(1);
+    var sURLVariables = sPageURL.split("&");
+    for (var i = 0; i < sURLVariables.length; i++) {
+        var sParameterName = sURLVariables[i].split("=");
+        if (sParameterName[0] == sParam) {
+            return sParameterName[1];
+        }
+    }
+}
 
 function keydown(event) {
 	closeIntro();
@@ -45,13 +65,27 @@ function drawMap() {
 		keyboardShortcuts: false
 	});
 
-	var query = new google.visualization.Query("https://docs.google.com/spreadsheets/d/1qSjDuGdj6l9aj-ghjLUjHrESR5E4NfUIVvnlb0PPmzE/gviz/tq?sheet=Actual&tq=select%20A,B,C,D,E,F,G,H,I");
-	query.send(receiveData);
+	var query = new google.visualization.Query("https://docs.google.com/spreadsheets/d/" + GetUrlParameter("data") + "/gviz/tq?sheet=Metadata&tq=select%20A,B");
+	query.send(receiveMetaData);
 }
 function changeZoom(delta) {
 	map.setZoom(map.getZoom() + delta);
 }
 
+function receiveMetaData(response) {
+	datatable = response.getDataTable();
+	datatableNumberOfRows = datatable.getNumberOfRows();
+	for (var i = 0; i < datatableNumberOfRows; i += 1) {
+		key = datatable.getValue(i, 0);
+		if (key == "Title") {
+			$(document).attr("title", datatable.getValue(i, 1));
+		} else if (key == "Intro") {
+			$("#userintro").html(datatable.getValue(i, 1));
+		}
+	}
+	var query = new google.visualization.Query("https://docs.google.com/spreadsheets/d/" + GetUrlParameter("data") + "/gviz/tq?sheet=Actual&tq=select%20A,B,C,D,E,F,G,H,I");
+	query.send(receiveData);
+}
 function receiveData(response) {
 	datatable = response.getDataTable();
 	datatableNumberOfRows = datatable.getNumberOfRows();
@@ -64,28 +98,34 @@ function receiveData(response) {
 
 	for (var i = 0; i < datatableNumberOfRows; i += 1) {
 
-		exclude = datatable.getValue(i,0);
+		exclude = datatable.getValue(i, COLUMN_IDX_EXCLUDE);
 
 	if (exclude && !exclude.startsWith("Path")) continue;
 
-		timezone = datatable.getValue(i,8);
+		timezone = datatable.getValue(i, COLUMN_IDX_TIMEZONE);
+		// TODO: More sophisticated date arithmetic
 		timeoffset = timezone == "ADT" ? -3 :
 			timezone == "EDT" ? -4 :
 			timezone == "CDT" ? -5 :
 			timezone == "CST" || timezone == "MDT" ? -6 :
 			timezone == "PDT" ? -7 : 0;
 
+		icon = datatable.getValue(i, COLUMN_IDX_ICON);
+		if (debug && !icon) {
+			icon = "3x3black.png";
+		}
+
 		point = {
 			data_index : i + 2,
 			exclude : exclude,
-			source : datatable.getValue(i,1),
-			icon : datatable.getValue(i,2),
-			image : datatable.getValue(i,3),
-			datetime : moment(datatable.getValue(i,7)).add(timeoffset, "hours"),
+			source : datatable.getValue(i, COLUMN_IDX_SOURCE),
+			icon : icon,
+			image : datatable.getValue(i, COLUMN_IDX_IMAGE),
+			datetime : moment(datatable.getValue(i, COLUMN_IDX_DATE)).add(timeoffset, "hours"),
 			timezone : timezone,
-			lat : datatable.getValue(i,5),
-			lng : datatable.getValue(i,6),
-			comments : datatable.getValue(i,4)
+			lat : datatable.getValue(i, COLUMN_IDX_LAT),
+			lng : datatable.getValue(i, COLUMN_IDX_LNG),
+			comments : datatable.getValue(i, COLUMN_IDX_COMMENTS)
 		};
 		points.push(point);
 	}
@@ -136,18 +176,57 @@ function addPointToRoute(point_index, polyline, map) {
 }
 function buildRoute() {
 	var polyline = null;
+	var max_lat = -90;
+	var min_lat = 90;
+	var max_lng = -180;
+	var min_lng = 180;
+	var again = true;
 	for (var i = 0; i < points.length; i += 1) {
+		point = points[i];
+		if (point.lng && point.lng > max_lng) {
+			max_lng = point.lng;
+		}
+		if (point.lng && point.lng < min_lng) {
+			min_lng = point.lng;
+		}
+		if (point.lat && point.lat > max_lat) {
+			max_lat = point.lat;
+		}
+		if (point.lat && point.lat < min_lat) {
+			min_lat = point.lat;
+		}
 		polyline = addPointToRoute(i, polyline, map);
+		
+		if (again && !max_lng) { alert(i); alert(point.lng); again = false; }
 	}
-	$("input#start").attr("disabled", false);
-	$("input#start").attr("value", "Start");
-	$("input#start").effect("bounce", "slow");
+	lat_diff = max_lat - min_lat;
+	lng_diff = max_lng - min_lng;
+	max_diff = lat_diff > lng_diff ? lat_diff : lng_diff;
+	map.panTo(new google.maps.LatLng((min_lat + max_lat)/2, (min_lng + max_lng)/2));
+	if (max_diff > 50) {
+		map.setZoom(4);
+	} else if (max_diff > 15) {
+		map.setZoom(5);
+	} else if (max_diff > 5) {
+		map.setZoom(6);
+	} else if (max_diff > 2) {
+		map.setZoom(7);
+	} else {
+		map.setZoom(8);
+	}
+	$("#loading input#dotdotdot").toggle("fade", function() {
+		$("#loading input#start").toggle("fade");
+	});
 
 	document.onkeydown=keydown;
 }
 
 function closeIntro() {
-	$("#loading").hide("fade");
+	loading = $("#loading");
+	if (loading.is(":visible")) {
+		$("#loading").hide("fade");
+		popupNextPoint();
+	}
 }
 
 var preloadimages = [];
